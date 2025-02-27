@@ -1,3 +1,4 @@
+import numpy as np  # Fix the missing 'i'
 import torch
 import torch.nn as nn
 from torch_geometric.nn import GCNConv
