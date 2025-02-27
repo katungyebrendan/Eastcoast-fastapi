@@ -34,7 +34,7 @@ model, kmeans = None, None
 
 try:
     # Load KMeans model
-    kmeans_path = os.path.join("models", "kmeans_model.pkl")
+    kmeans_path = os.path.join("models", "kmean_model.pkl")
     kmeans = joblib.load(kmeans_path)
     logger.info("KMeans model loaded successfully.")
 
