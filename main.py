@@ -1,10 +1,10 @@
-import torch
-import numpy as np
 import os
-import logging
-from fastapi import FastAPI, HTTPException
+import torch
 import joblib
+import numpy as np  # Make sure this line is correct
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from sklearn.cluster import KMeans
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
