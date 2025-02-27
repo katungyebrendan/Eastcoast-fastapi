@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 import os
 import logging
 from fastapi import FastAPI, HTTPException
