@@ -5,6 +5,8 @@ import numpy as np  # Make sure this line is correct
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from sklearn.cluster import KMeans
+import logging
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
