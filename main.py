@@ -1,9 +1,9 @@
-from fastapi import FastAPI, HTTPException
 import torch
-import joblib
-from pydantic import BaseModel
 import os
 import logging
+from fastapi import FastAPI, HTTPException
+import joblib
+from pydantic import BaseModel
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -12,18 +12,35 @@ logger = logging.getLogger(__name__)
 # Create FastAPI app
 app = FastAPI()
 
-# Load models from local paths
-model, kmeans = None, None  # Initialize as None for error handling
+# Define the model architecture (must match original structure)
+class StudentModel(torch.nn.Module):
+    def __init__(self):
+        super(StudentModel, self).__init__()
+        self.fc1 = torch.nn.Linear(5, 16)
+        self.fc2 = torch.nn.Linear(16, 8)
+        self.fc3 = torch.nn.Linear(8, 2)  # Assuming binary classification
+
+    def forward(self, x, edge_index):
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
+
+# Load models
+model, kmeans = None, None
 
 try:
-    model_path = os.path.join("models", "student_model.pth")
-    model = torch.load(model_path, map_location=torch.device('cpu'))  # Load on CPU for compatibility
-    model.eval()
-    logger.info("Student model loaded successfully.")
-
+    # Load KMeans model
     kmeans_path = os.path.join("models", "kmeans_model.pkl")
     kmeans = joblib.load(kmeans_path)
     logger.info("KMeans model loaded successfully.")
+
+    # Load PyTorch model correctly
+    model_path = os.path.join("models", "student_model.pth")
+    model = StudentModel()  # Initialize model first
+    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+    model.eval()  # Put model in evaluation mode
+    logger.info("Student model loaded successfully.")
 
 except Exception as e:
     logger.error(f"Error loading models: {str(e)}")
@@ -39,18 +56,18 @@ def predict(request: PredictionRequest):
         if model is None or kmeans is None:
             raise HTTPException(status_code=500, detail="Models are not loaded properly.")
 
-        # Ensure the user provided exactly 4 features
+        # Ensure exactly 4 features
         if len(request.features) != 4:
-            raise HTTPException(status_code=400, detail="Exactly 4 features are required: tick, cape, cattle, bio5.")
+            raise HTTPException(status_code=400, detail="Exactly 4 features required: tick, cape, cattle, bio5.")
         
-        # Compute the cluster using the pre-fitted KMeans model
+        # Predict cluster using KMeans
         cluster_label = int(kmeans.predict([request.features])[0])
         
-        # Combine the raw features with the computed cluster to form a 5-element input vector
+        # Create input tensor
         input_features = request.features + [cluster_label]
-        input_tensor = torch.tensor([input_features], dtype=torch.float32)  # Ensure proper shape
+        input_tensor = torch.tensor([input_features], dtype=torch.float32)
         
-        # Create a dummy edge index for a single-node graph
+        # Dummy edge index for GCN compatibility
         dummy_edge_index = torch.tensor([[0], [0]], dtype=torch.long)
         
         # Make prediction
@@ -73,8 +90,7 @@ def predict(request: PredictionRequest):
 def read_root():
     return {"status": "API is running"}
 
-# Start the server only when running directly
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.getenv("PORT", 10000))  # Ensure it matches Render's assigned port
+    port = int(os.getenv("PORT", 10000))  
     uvicorn.run(app, host="0.0.0.0", port=port)
