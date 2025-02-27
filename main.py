@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from sklearn.cluster import KMeans
 import logging
+import numpy as np
 
 
 # Set up logging
