@@ -40,7 +40,7 @@ try:
     logger.info("KMeans model loaded successfully.")
 
     # Load PyTorch model correctly
-    model_path = os.path.join("models", "student_model.pth")
+    model_path = os.path.join("models", "student_model.py")
     model = StudentModel()  # Initialize model first
     model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     model.eval()  # Put model in evaluation mode
