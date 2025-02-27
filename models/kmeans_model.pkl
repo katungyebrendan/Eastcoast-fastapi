@@ -1,6 +1,7 @@
 import numpy as np
 import joblib
 from sklearn.cluster import KMeans
+import numpy as np
 
 # Generate dummy training data (Replace with actual dataset if available)
 # Assuming 4 features as used in your FastAPI code
